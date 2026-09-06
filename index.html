@@ -5,23 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Allgemeinwissen-Quiz</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0F1B3C">
+<meta name="theme-color" content="#111111">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0F1B3C;
-    --panel:#16234F;
-    --panel-2:#1C2C5C;
-    --line:#31437F;
-    --gold:#E8B44C;
-    --gold-dim:#B98F3A;
-    --text:#F2EFE6;
-    --text-dim:#9FB0D9;
+    --bg:#111111;
+    --panel:#1B1B1B;
+    --panel-2:#252525;
+    --line:#3A3A3A;
+    --yellow:#F2C230;
+    --yellow-dim:#B8901D;
+    --text:#F5F3EC;
+    --text-dim:#9C9C95;
     --green:#4CAF6D;
     --red:#E2555B;
   }
@@ -33,25 +33,31 @@
     -webkit-tap-highlight-color:transparent;
     overscroll-behavior:none;
   }
-  .display{font-family:'Anton', sans-serif; letter-spacing:0.02em;}
+  .display{font-family:'Archivo Black', sans-serif;}
   #app{
     max-width:480px; margin:0 auto; min-height:100vh;
     display:flex; flex-direction:column;
-    padding:env(safe-area-inset-top,0) 18px env(safe-area-inset-bottom,0);
-    position:relative;
   }
-  .screen{display:none; flex:1; flex-direction:column; padding-top:28px; padding-bottom:24px;}
+  .hazard-strip{
+    height:10px; width:100%; flex-shrink:0;
+    background:repeating-linear-gradient(135deg, var(--yellow) 0 14px, var(--bg) 14px 28px);
+  }
+  .content{
+    flex:1; display:flex; flex-direction:column;
+    padding:0 18px calc(env(safe-area-inset-bottom,0) + 20px);
+  }
+  .screen{display:none; flex:1; flex-direction:column; padding-top:24px;}
   .screen.active{display:flex;}
 
   /* ---------- Start screen ---------- */
-  .eyebrow{color:var(--gold); font-size:14px; font-weight:600; margin:0 0 4px;}
+  .eyebrow{color:var(--yellow); font-size:14px; font-weight:600; margin:0 0 4px;}
   h1.title{
-    font-size:clamp(34px, 9vw, 46px);
+    font-size:clamp(32px, 8.5vw, 44px);
     text-transform:uppercase;
-    line-height:0.98; margin:0 0 6px; color:var(--text);
+    line-height:0.96; margin:0 0 8px; color:var(--text);
   }
-  .title .accent{color:var(--gold);}
-  .subtitle{color:var(--text-dim); font-size:15px; line-height:1.5; margin:0 0 28px; max-width:34ch;}
+  .title .accent{color:var(--yellow);}
+  .subtitle{color:var(--text-dim); font-size:15px; line-height:1.5; margin:0 0 26px; max-width:36ch;}
 
   .cat-grid{
     display:grid; grid-template-columns:1fr 1fr; gap:10px;
@@ -60,7 +66,7 @@
   .cat-tile{
     background:var(--panel);
     border:1px solid var(--line);
-    border-top:3px solid var(--gold-dim);
+    border-top:3px solid var(--yellow-dim);
     padding:16px 12px;
     text-align:left;
     color:var(--text);
@@ -68,51 +74,50 @@
     cursor:pointer;
     transition:border-top-color .15s ease, background .15s ease;
   }
-  .cat-tile:active{background:var(--panel-2); border-top-color:var(--gold);}
-  .cat-icon{font-size:26px; display:block; margin-bottom:8px;}
-  .cat-name{font-weight:700; font-size:15px; display:block;}
+  .cat-tile:active{background:var(--panel-2); border-top-color:var(--yellow);}
+  .cat-icon{font-size:24px; display:block; margin-bottom:8px;}
+  .cat-name{font-weight:700; font-size:14px; display:block;}
   .cat-count{color:var(--text-dim); font-size:12px; display:block; margin-top:2px;}
 
   .cat-tile.mixed{
     grid-column:1 / -1;
-    background:var(--gold);
+    background:var(--yellow);
     color:var(--bg);
-    border-top-color:var(--gold);
+    border-top-color:var(--yellow);
     display:flex; align-items:center; justify-content:space-between;
   }
-  .cat-tile.mixed .cat-name{font-size:16px;}
+  .cat-tile.mixed .cat-name{font-size:15px;}
   .cat-tile.mixed .cat-count{color:#5A4110;}
 
   .highscore-line{
-    margin-top:auto; padding-top:20px;
+    margin-top:auto; padding-top:18px; padding-bottom:6px;
     color:var(--text-dim); font-size:13px;
     border-top:1px solid var(--line);
   }
-  .highscore-line strong{color:var(--gold);}
+  .highscore-line strong{color:var(--yellow);}
 
   /* ---------- Quiz screen ---------- */
-  .quiz-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
-  .quiz-cat{color:var(--gold); font-size:13px; font-weight:600;}
-  .quiz-progress-text{color:var(--text-dim); font-size:13px;}
-  .progress-track{height:4px; background:var(--panel); margin-bottom:26px; overflow:hidden;}
-  .progress-fill{height:100%; background:var(--gold); width:0%; transition:width .35s ease;}
-
-  .score-chip{
-    position:absolute; top:calc(env(safe-area-inset-top,0) + 8px); right:18px;
-    background:var(--panel); border:1px solid var(--line);
-    padding:5px 10px; font-size:12px; color:var(--text-dim);
+  .quiz-header{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:10px; margin-bottom:12px; flex-wrap:wrap;
   }
-  .score-chip strong{color:var(--gold); font-family:'Anton'; font-size:14px; margin-left:4px;}
+  .quiz-cat{color:var(--yellow); font-size:13px; font-weight:600;}
+  .quiz-meta{display:flex; align-items:baseline; gap:14px;}
+  .quiz-progress-text{color:var(--text-dim); font-size:13px;}
+  .quiz-score-text{color:var(--text-dim); font-size:13px;}
+  .quiz-score-text strong{font-family:'Archivo Black'; color:var(--yellow); font-size:14px; margin-left:4px;}
+  .progress-track{height:4px; background:var(--panel); margin-bottom:22px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--yellow); width:0%; transition:width .35s ease;}
 
   .question-panel{
     background:var(--panel);
-    border-top:3px solid var(--gold);
-    padding:22px 18px;
-    margin-bottom:20px;
-    min-height:96px;
+    border-top:3px solid var(--yellow);
+    padding:20px 18px;
+    margin-bottom:18px;
+    min-height:88px;
     display:flex; align-items:center;
   }
-  .question-text{font-size:19px; font-weight:600; line-height:1.35; margin:0;}
+  .question-text{font-size:18px; font-weight:600; line-height:1.35; margin:0;}
 
   .answers{display:flex; flex-direction:column; gap:10px;}
   .answer-btn{
@@ -124,12 +129,12 @@
     font-family:'Work Sans', sans-serif;
     font-size:15px; font-weight:500;
     text-align:left;
-    padding:15px 14px;
+    padding:14px 14px;
     cursor:pointer;
     transition:border-left-color .12s ease, background .12s ease;
   }
   .answer-letter{
-    font-family:'Anton'; color:var(--gold-dim); font-size:16px; min-width:18px;
+    font-family:'Archivo Black'; color:var(--yellow-dim); font-size:14px; min-width:18px;
   }
   .answer-btn:active{background:var(--panel-2);}
   .answer-btn.correct{background:rgba(76,175,109,0.15); border-left-color:var(--green);}
@@ -137,7 +142,6 @@
   .answer-btn.wrong{background:rgba(226,85,91,0.15); border-left-color:var(--red); animation:shake .28s ease;}
   .answer-btn.wrong .answer-letter{color:var(--red);}
   .answer-btn.disabled{pointer-events:none; opacity:0.55;}
-  .answer-btn.reveal-correct-only{opacity:1;}
 
   @keyframes shake{
     0%,100%{transform:translateX(0);}
@@ -145,26 +149,68 @@
     75%{transform:translateX(4px);}
   }
 
+  /* text-answer question type */
+  .text-answer-wrap{display:flex; flex-direction:column; gap:10px;}
+  .text-input{
+    background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--yellow-dim);
+    color:var(--text); font-family:'Work Sans', sans-serif; font-size:15px;
+    padding:14px; width:100%;
+  }
+  .text-input:focus{outline:none; border-left-color:var(--yellow);}
+  .check-btn{
+    padding:14px; border:none; background:var(--yellow); color:var(--bg);
+    font-family:'Archivo Black'; font-size:14px; text-transform:uppercase; cursor:pointer;
+  }
+  .check-btn:disabled{opacity:0.4; pointer-events:none;}
+
+  .reveal-box{
+    background:var(--panel-2); border-left:4px solid var(--yellow);
+    padding:14px; font-size:14px; color:var(--text-dim);
+  }
+  .reveal-box strong{color:var(--text); display:block; margin-bottom:4px; font-size:13px; text-transform:uppercase; letter-spacing:0.02em;}
+  .self-grade-row{display:flex; gap:10px; margin-top:4px;}
+  .self-grade-btn{
+    flex:1; padding:13px; border:1px solid var(--line); background:var(--panel);
+    color:var(--text); font-family:'Work Sans', sans-serif; font-weight:600; font-size:14px; cursor:pointer;
+  }
+  .self-grade-btn.right{border-color:var(--green); color:var(--green);}
+  .self-grade-btn.wrong{border-color:var(--red); color:var(--red);}
+  .self-grade-btn:disabled{opacity:0.4; pointer-events:none;}
+
+  /* explanation panel */
+  .explain-panel{
+    background:var(--panel-2); border-left:4px solid var(--text-dim);
+    padding:14px; margin-top:12px; display:none;
+  }
+  .explain-panel.show{display:block;}
+  .explain-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  .explain-label{color:var(--yellow); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em;}
+  .skip-btn{
+    background:none; border:none; color:var(--text-dim); font-size:12px;
+    text-decoration:underline; cursor:pointer; padding:0; font-family:'Work Sans', sans-serif;
+  }
+  .explain-text{margin:0; font-size:14px; color:var(--text-dim); line-height:1.5;}
+
   .next-btn{
-    margin-top:16px; padding:15px; border:none;
-    background:var(--gold); color:var(--bg);
-    font-family:'Anton'; font-size:15px; letter-spacing:0.03em; text-transform:uppercase;
+    margin-top:14px; padding:15px; border:none;
+    background:var(--yellow); color:var(--bg);
+    font-family:'Archivo Black'; font-size:14px; text-transform:uppercase;
     cursor:pointer; opacity:0; pointer-events:none; transition:opacity .2s ease;
   }
   .next-btn.show{opacity:1; pointer-events:auto;}
 
   /* ---------- Result screen ---------- */
   .result-label{color:var(--text-dim); font-size:14px; margin:0;}
-  .result-score{font-size:clamp(56px,20vw,80px); margin:2px 0 4px; line-height:1;}
+  .result-score{font-size:clamp(54px,19vw,76px); margin:2px 0 4px; line-height:1;}
   .result-score .of{font-size:0.4em; color:var(--text-dim);}
-  .result-msg{color:var(--gold); font-size:15px; font-weight:600; margin:0 0 26px;}
+  .result-msg{color:var(--yellow); font-size:15px; font-weight:600; margin:0 0 22px;}
 
   .result-newbest{
-    display:inline-block; background:var(--gold); color:var(--bg);
-    font-size:12px; font-weight:700; padding:4px 10px; margin-bottom:20px;
+    display:inline-block; background:var(--yellow); color:var(--bg);
+    font-size:12px; font-weight:700; padding:4px 10px; margin-bottom:18px;
   }
 
-  .review-list{display:flex; flex-direction:column; gap:8px; margin-bottom:24px;}
+  .review-list{display:flex; flex-direction:column; gap:8px; margin-bottom:22px; overflow-y:auto;}
   .review-item{
     background:var(--panel); border-left:4px solid var(--line);
     padding:10px 12px; font-size:13px; color:var(--text-dim);
@@ -173,27 +219,27 @@
   .review-item.bad{border-left-color:var(--red);}
   .review-item .rq{color:var(--text); display:block; margin-bottom:3px; font-weight:500;}
 
-  .result-actions{display:flex; gap:10px; margin-top:auto;}
+  .result-actions{display:flex; gap:10px; margin-top:auto; padding-top:8px;}
   .btn-secondary, .btn-primary{
     flex:1; padding:15px; border:none; cursor:pointer;
-    font-family:'Anton'; font-size:14px; letter-spacing:0.02em; text-transform:uppercase;
+    font-family:'Archivo Black'; font-size:13px; text-transform:uppercase;
   }
   .btn-secondary{background:var(--panel); color:var(--text); border:1px solid var(--line);}
-  .btn-primary{background:var(--gold); color:var(--bg);}
+  .btn-primary{background:var(--yellow); color:var(--bg);}
 
-  ::selection{background:var(--gold); color:var(--bg);}
+  ::selection{background:var(--yellow); color:var(--bg);}
 </style>
 </head>
 <body>
 <div id="app">
-
-  <div class="score-chip" id="scoreChip" style="display:none;">Punkte<strong id="scoreChipVal">0</strong></div>
+  <div class="hazard-strip"></div>
+  <div class="content">
 
   <!-- START SCREEN -->
   <section class="screen active" id="screen-start">
-    <p class="eyebrow">60 Fragen · 6 Kategorien</p>
+    <p class="eyebrow" id="questionCountLabel">Fragen · 7 Kategorien</p>
     <h1 class="title">Allgemein<span class="accent">wissen</span>-Quiz</h1>
-    <p class="subtitle">Wähle eine Kategorie oder spiele alle Themen gemischt. Jede Runde hat 10 Fragen.</p>
+    <p class="subtitle">Wähle eine Kategorie oder spiele alle Themen gemischt. Jede Runde hat 10 Fragen — auch mit Freitext-Fragen zum Selbst-Bewerten.</p>
 
     <div class="cat-grid" id="catGrid"></div>
 
@@ -204,13 +250,24 @@
   <section class="screen" id="screen-quiz">
     <div class="quiz-header">
       <span class="quiz-cat" id="quizCat">Kategorie</span>
-      <span class="quiz-progress-text" id="quizProgressText">Frage 1/10</span>
+      <span class="quiz-meta">
+        <span class="quiz-progress-text" id="quizProgressText">Frage 1/10</span>
+        <span class="quiz-score-text">Punkte<strong id="scoreVal">0</strong></span>
+      </span>
     </div>
     <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
     <div class="question-panel"><p class="question-text" id="questionText">Frage…</p></div>
 
     <div class="answers" id="answersWrap"></div>
+
+    <div class="explain-panel" id="explainPanel">
+      <div class="explain-head">
+        <span class="explain-label">Erklärung</span>
+        <button class="skip-btn" id="skipExplainBtn">Überspringen</button>
+      </div>
+      <p class="explain-text" id="explainText"></p>
+    </div>
 
     <button class="next-btn" id="nextBtn">Weiter</button>
   </section>
@@ -230,112 +287,169 @@
     </div>
   </section>
 
+  </div>
 </div>
 
 <script>
 /* ---------------------------------------------------------
-   Fragenkatalog — 6 Kategorien à 10 Fragen (Allgemeinwissen)
+   Fragenkatalog — 7 Kategorien, gemischte Fragetypen (mc/text)
+   Hinweis: Fragen zu aktuellen Amtsträgern sind Freitext-Fragen
+   (selbst bewertet), damit die App auch nach einem Regierungswechsel
+   funktioniert. Stand der hinterlegten Erklärungen: September 2026.
 --------------------------------------------------------- */
 const QUESTION_BANK = {
   geografie: {
     label: "Geografie", icon: "🌍",
     questions: [
-      { q:"Welches ist der längste Fluss Europas?", o:["Rhein","Donau","Wolga","Elbe"], a:2 },
-      { q:"Wie heißt die Hauptstadt von Australien?", o:["Sydney","Melbourne","Canberra","Perth"], a:2 },
-      { q:"Welches Land hat die meisten Einwohner der Welt?", o:["China","USA","Indien","Indonesien"], a:2 },
-      { q:"An welchem Gebirge liegt der höchste Berg Europas, der Mont Blanc?", o:["Pyrenäen","Alpen","Karpaten","Apennin"], a:1 },
-      { q:"Welche Meerenge trennt Europa und Afrika?", o:["Bosporus","Straße von Gibraltar","Ärmelkanal","Kattegat"], a:1 },
-      { q:"Wie viele Bundesländer hat Deutschland?", o:["14","15","16","17"], a:2 },
-      { q:"Welche Wüste ist die größte Sandwüste der Welt?", o:["Sahara","Gobi","Kalahari","Rub al-Chali"], a:0 },
-      { q:"In welchem Land liegt der Machu Picchu?", o:["Chile","Bolivien","Peru","Ecuador"], a:2 },
-      { q:"Welcher Ozean ist der größte der Erde?", o:["Atlantik","Indischer Ozean","Pazifik","Arktischer Ozean"], a:2 },
-      { q:"Welche Stadt liegt auf zwei Kontinenten?", o:["Moskau","Istanbul","Kairo","Athen"], a:1 }
+      { type:"mc", q:"Welches ist der längste Fluss Europas?", o:["Rhein","Donau","Wolga","Elbe"], a:2, exp:"Die Wolga ist mit rund 3.530 km der längste Fluss Europas und fließt komplett durch Russland." },
+      { type:"mc", q:"Wie heißt die Hauptstadt von Australien?", o:["Sydney","Melbourne","Canberra","Perth"], a:2, exp:"Canberra wurde bewusst als Kompromiss zwischen den Rivalen Sydney und Melbourne als Hauptstadt geplant." },
+      { type:"mc", q:"Welches Land hat die meisten Einwohner der Welt?", o:["China","USA","Indien","Indonesien"], a:2, exp:"Indien hat China 2023 als bevölkerungsreichstes Land der Welt überholt." },
+      { type:"mc", q:"An welchem Gebirge liegt der höchste Berg Europas, der Mont Blanc?", o:["Pyrenäen","Alpen","Karpaten","Apennin"], a:1, exp:"Der Mont Blanc liegt an der Grenze zwischen Frankreich und Italien in den Alpen." },
+      { type:"mc", q:"Welche Meerenge trennt Europa und Afrika?", o:["Bosporus","Straße von Gibraltar","Ärmelkanal","Kattegat"], a:1, exp:"Die Straße von Gibraltar verbindet Atlantik und Mittelmeer und ist an der engsten Stelle nur 14 km breit." },
+      { type:"mc", q:"Wie viele Bundesländer hat Deutschland?", o:["14","15","16","17"], a:2, exp:"Deutschland besteht seit der Wiedervereinigung 1990 aus 16 Bundesländern." },
+      { type:"mc", q:"Welche Wüste ist die größte Sandwüste der Welt?", o:["Sahara","Gobi","Kalahari","Rub al-Chali"], a:0, exp:"Die Sahara bedeckt fast die gesamte Nordhälfte Afrikas und ist die größte heiße Wüste der Welt." },
+      { type:"mc", q:"In welchem Land liegt der Machu Picchu?", o:["Chile","Bolivien","Peru","Ecuador"], a:2, exp:"Die Inka-Ruinenstadt Machu Picchu liegt hoch in den Anden Perus." },
+      { type:"mc", q:"Welcher Ozean ist der größte der Erde?", o:["Atlantik","Indischer Ozean","Pazifik","Arktischer Ozean"], a:2, exp:"Der Pazifik bedeckt etwa ein Drittel der Erdoberfläche und ist größer als alle Landmassen zusammen." },
+      { type:"mc", q:"Welche Stadt liegt auf zwei Kontinenten?", o:["Moskau","Istanbul","Kairo","Athen"], a:1, exp:"Istanbul liegt beidseits des Bosporus, teils in Europa, teils in Asien." },
+      { type:"mc", q:"Welcher ist der höchste Berg der Welt?", o:["K2","Mount Everest","Kangchendzönga","Lhotse"], a:1, exp:"Der Mount Everest im Himalaya ist mit 8.849 Metern der höchste Berg der Erde." },
+      { type:"mc", q:"In welchem Land liegt der Amazonas-Regenwald hauptsächlich?", o:["Peru","Kolumbien","Brasilien","Bolivien"], a:2, exp:"Rund 60 Prozent des Amazonas-Regenwaldes liegen auf brasilianischem Staatsgebiet." },
+      { type:"mc", q:"Wie heißt die Hauptstadt von Kanada?", o:["Toronto","Vancouver","Ottawa","Montreal"], a:2, exp:"Ottawa wurde 1857 von Königin Victoria als Hauptstadt gewählt, obwohl es kleiner als Toronto ist." },
+      { type:"mc", q:"Welcher See gilt als größter Süßwassersee der Erde (nach Fläche)?", o:["Baikalsee","Oberer See","Viktoriasee","Kaspisches Meer"], a:1, exp:"Der Obere See (Lake Superior) in Nordamerika ist mit rund 82.000 km² der größte Süßwassersee der Welt." },
+      { type:"text", q:"In welchem Land liegt die Stadt Kyoto?", answer:"Japan", exp:"Kyoto war jahrhundertelang die Kaiserstadt Japans und ist für seine Tempel bekannt." }
     ]
   },
   geschichte: {
     label: "Geschichte", icon: "📜",
     questions: [
-      { q:"In welchem Jahr fiel die Berliner Mauer?", o:["1987","1989","1991","1993"], a:1 },
-      { q:"Wer war der erste Bundeskanzler der Bundesrepublik Deutschland?", o:["Willy Brandt","Konrad Adenauer","Ludwig Erhard","Kurt Schumacher"], a:1 },
-      { q:"Wann endete der Zweite Weltkrieg in Europa?", o:["1943","1944","1945","1946"], a:2 },
-      { q:"Welches Ereignis löste 1914 den Ersten Weltkrieg aus?", o:["Attentat von Sarajevo","Reichstagsbrand","Sturm auf die Bastille","Krönung Wilhelms II."], a:0 },
-      { q:"Wer war die erste Bundeskanzlerin Deutschlands?", o:["Ursula von der Leyen","Angela Merkel","Christine Lambrecht","Annalena Baerbock"], a:1 },
-      { q:"In welchem Jahrhundert lebte Karl der Große?", o:["6. Jahrhundert","8./9. Jahrhundert","11. Jahrhundert","13. Jahrhundert"], a:1 },
-      { q:"Welches Land führte als erstes Land eine Frau ins Amt der Regierungschefin?", o:["Großbritannien","Sri Lanka","Indien","Israel"], a:1 },
-      { q:"Wann wurde die Europäische Union (als EU) gegründet?", o:["1957","1975","1993","2002"], a:2 },
-      { q:"Wer entdeckte 1492 den Seeweg nach Amerika?", o:["Vasco da Gama","Christoph Kolumbus","Ferdinand Magellan","Amerigo Vespucci"], a:1 },
-      { q:"Welche deutsche Stadt war während der Teilung eine geteilte Insel im Osten?", o:["Leipzig","West-Berlin","Dresden","Bonn"], a:1 }
+      { type:"mc", q:"In welchem Jahr fiel die Berliner Mauer?", o:["1987","1989","1991","1993"], a:1, exp:"Die Mauer fiel am 9. November 1989, ein Jahr vor der offiziellen Wiedervereinigung." },
+      { type:"mc", q:"Wer war der erste Bundeskanzler der Bundesrepublik Deutschland?", o:["Willy Brandt","Konrad Adenauer","Ludwig Erhard","Kurt Schumacher"], a:1, exp:"Konrad Adenauer regierte von 1949 bis 1963 und prägte den Wiederaufbau Westdeutschlands." },
+      { type:"mc", q:"Wann endete der Zweite Weltkrieg in Europa?", o:["1943","1944","1945","1946"], a:2, exp:"Mit der bedingungslosen Kapitulation der Wehrmacht am 8. Mai 1945 endete der Krieg in Europa." },
+      { type:"mc", q:"Welches Ereignis löste 1914 den Ersten Weltkrieg aus?", o:["Attentat von Sarajevo","Reichstagsbrand","Sturm auf die Bastille","Krönung Wilhelms II."], a:0, exp:"Die Ermordung des österreichischen Thronfolgers Franz Ferdinand löste eine Kriegskaskade in ganz Europa aus." },
+      { type:"mc", q:"Wer war die erste Bundeskanzlerin Deutschlands?", o:["Ursula von der Leyen","Angela Merkel","Christine Lambrecht","Annalena Baerbock"], a:1, exp:"Angela Merkel regierte von 2005 bis 2021 als erste Frau im Kanzleramt." },
+      { type:"mc", q:"In welchem Jahrhundert lebte Karl der Große?", o:["6. Jahrhundert","8./9. Jahrhundert","11. Jahrhundert","13. Jahrhundert"], a:1, exp:"Karl der Große wurde im Jahr 800 zum Kaiser gekrönt und starb 814." },
+      { type:"mc", q:"Welches Land führte als erstes eine Frau ins Amt der Regierungschefin?", o:["Großbritannien","Sri Lanka","Indien","Israel"], a:1, exp:"Sirimavo Bandaranaike wurde 1960 in Sri Lanka (damals Ceylon) die erste Regierungschefin der Welt." },
+      { type:"mc", q:"Wann wurde die Europäische Union (als EU) gegründet?", o:["1957","1975","1993","2002"], a:2, exp:"Mit dem Vertrag von Maastricht entstand 1993 aus der EWG die Europäische Union." },
+      { type:"mc", q:"Wer entdeckte 1492 den Seeweg nach Amerika?", o:["Vasco da Gama","Christoph Kolumbus","Ferdinand Magellan","Amerigo Vespucci"], a:1, exp:"Kolumbus erreichte 1492 im Auftrag der spanischen Krone die Karibik, auf der Suche nach einem Seeweg nach Indien." },
+      { type:"mc", q:"Welche deutsche Stadt war während der Teilung eine geteilte Insel im Osten?", o:["Leipzig","West-Berlin","Dresden","Bonn"], a:1, exp:"West-Berlin lag komplett auf DDR-Gebiet und war nur über Transitwege erreichbar." },
+      { type:"mc", q:"Wer war Bundeskanzler unmittelbar vor Angela Merkel?", o:["Helmut Kohl","Helmut Schmidt","Gerhard Schröder","Willy Brandt"], a:2, exp:"Gerhard Schröder (SPD) regierte von 1998 bis 2005, danach übernahm Angela Merkel." },
+      { type:"mc", q:"In welchem Jahr wurde die Bundesrepublik Deutschland gegründet?", o:["1945","1949","1955","1961"], a:1, exp:"Das Grundgesetz trat am 23. Mai 1949 in Kraft, die Gründung der Bundesrepublik gilt als abgeschlossen." },
+      { type:"mc", q:"Welches Bauwerk in Berlin war das Symbol der deutschen Teilung?", o:["Brandenburger Tor","Berliner Mauer","Fernsehturm","Reichstag"], a:1, exp:"Die Berliner Mauer trennte von 1961 bis 1989 Ost- und West-Berlin." },
+      { type:"mc", q:"An welchem Datum wird der 'Tag der Deutschen Einheit' gefeiert?", o:["9. November","3. Oktober","17. Juni","1. Juli"], a:1, exp:"Am 3. Oktober 1990 trat die DDR der Bundesrepublik bei — seither ist das der deutsche Nationalfeiertag." },
+      { type:"mc", q:"Wer war der erste Präsident der USA?", o:["Thomas Jefferson","Abraham Lincoln","George Washington","John Adams"], a:2, exp:"George Washington war von 1789 bis 1797 im Amt und gilt als einer der Gründerväter der USA." }
     ]
   },
   wissenschaft: {
     label: "Naturwissenschaft", icon: "🔬",
     questions: [
-      { q:"Welches chemische Element hat das Symbol 'Fe'?", o:["Fluor","Eisen","Zinn","Phosphor"], a:1 },
-      { q:"Wie viele Knochen hat ein erwachsener Mensch etwa?", o:["156","206","256","306"], a:1 },
-      { q:"Was misst man in Hertz?", o:["Spannung","Frequenz","Kraft","Temperatur"], a:1 },
-      { q:"Welcher Planet ist der Sonne am nächsten?", o:["Venus","Erde","Merkur","Mars"], a:2 },
-      { q:"Wie nennt man den Prozess, bei dem Pflanzen Licht in Energie umwandeln?", o:["Photosynthese","Osmose","Fermentation","Transpiration"], a:0 },
-      { q:"Welches Gas machen Pflanzen bei der Photosynthese hauptsächlich frei?", o:["Kohlendioxid","Stickstoff","Sauerstoff","Wasserstoff"], a:2 },
-      { q:"Wer entwickelte die allgemeine Relativitätstheorie?", o:["Isaac Newton","Albert Einstein","Niels Bohr","Max Planck"], a:1 },
-      { q:"Wie viele Herzkammern hat ein Mensch?", o:["Zwei","Drei","Vier","Fünf"], a:2 },
-      { q:"Was ist die Grundeinheit der elektrischen Stromstärke?", o:["Volt","Watt","Ohm","Ampere"], a:3 },
-      { q:"Welches ist das häufigste Gas in der Erdatmosphäre?", o:["Sauerstoff","Stickstoff","Kohlendioxid","Argon"], a:1 }
+      { type:"mc", q:"Welches chemische Element hat das Symbol 'Fe'?", o:["Fluor","Eisen","Zinn","Phosphor"], a:1, exp:"'Fe' steht für Ferrum, das lateinische Wort für Eisen." },
+      { type:"mc", q:"Wie viele Knochen hat ein erwachsener Mensch etwa?", o:["156","206","256","306"], a:1, exp:"Ein Neugeborenes hat noch mehr Knochen, die im Laufe des Wachstums zu insgesamt 206 verschmelzen." },
+      { type:"mc", q:"Was misst man in Hertz?", o:["Spannung","Frequenz","Kraft","Temperatur"], a:1, exp:"Hertz (Hz) gibt an, wie oft sich ein Vorgang pro Sekunde wiederholt, etwa bei Schallwellen." },
+      { type:"mc", q:"Welcher Planet ist der Sonne am nächsten?", o:["Venus","Erde","Merkur","Mars"], a:2, exp:"Merkur umkreist die Sonne in nur etwa 88 Tagen und ist ihr am nächsten." },
+      { type:"mc", q:"Wie nennt man den Prozess, bei dem Pflanzen Licht in Energie umwandeln?", o:["Photosynthese","Osmose","Fermentation","Transpiration"], a:0, exp:"Bei der Photosynthese wandeln Pflanzen mithilfe von Chlorophyll Lichtenergie in chemische Energie um." },
+      { type:"mc", q:"Welches Gas geben Pflanzen bei der Photosynthese hauptsächlich ab?", o:["Kohlendioxid","Stickstoff","Sauerstoff","Wasserstoff"], a:2, exp:"Als Nebenprodukt der Photosynthese entsteht Sauerstoff, den Pflanzen an die Luft abgeben." },
+      { type:"mc", q:"Wer entwickelte die allgemeine Relativitätstheorie?", o:["Isaac Newton","Albert Einstein","Niels Bohr","Max Planck"], a:1, exp:"Einstein veröffentlichte die allgemeine Relativitätstheorie 1915/1916 und veränderte damit unser Verständnis von Raum und Zeit." },
+      { type:"mc", q:"Wie viele Herzkammern hat ein Mensch?", o:["Zwei","Drei","Vier","Fünf"], a:2, exp:"Das menschliche Herz hat zwei Vorhöfe und zwei Herzkammern, also vier Kammern insgesamt." },
+      { type:"mc", q:"Was ist die Grundeinheit der elektrischen Stromstärke?", o:["Volt","Watt","Ohm","Ampere"], a:3, exp:"Die Stromstärke wird in Ampere (A) gemessen, benannt nach dem Physiker André-Marie Ampère." },
+      { type:"mc", q:"Welches ist das häufigste Gas in der Erdatmosphäre?", o:["Sauerstoff","Stickstoff","Kohlendioxid","Argon"], a:1, exp:"Stickstoff macht etwa 78 Prozent der Erdatmosphäre aus, Sauerstoff nur rund 21 Prozent." },
+      { type:"mc", q:"Wie viele Chromosomenpaare hat ein Mensch normalerweise?", o:["21","22","23","24"], a:2, exp:"Der Mensch hat 23 Chromosomenpaare, also 46 Chromosomen insgesamt." },
+      { type:"mc", q:"Welche chemische Formel hat Wasser?", o:["CO2","H2O","NaCl","O2"], a:1, exp:"Ein Wassermolekül besteht aus zwei Wasserstoff- und einem Sauerstoffatom." },
+      { type:"mc", q:"Wer entwickelte die Evolutionstheorie?", o:["Gregor Mendel","Louis Pasteur","Charles Darwin","Isaac Newton"], a:2, exp:"Charles Darwin veröffentlichte 1859 'Die Entstehung der Arten' und begründete die Evolutionstheorie." },
+      { type:"mc", q:"Wie nennt man die Lehre von Erdbeben?", o:["Vulkanologie","Seismologie","Geologie","Meteorologie"], a:1, exp:"Seismologen untersuchen Erdbebenwellen, um Erdbeben zu messen und zu verstehen." },
+      { type:"mc", q:"Welches Organ produziert Insulin?", o:["Leber","Niere","Bauchspeicheldrüse","Milz"], a:2, exp:"Die Bauchspeicheldrüse (Pankreas) produziert Insulin, das den Blutzuckerspiegel reguliert." }
     ]
   },
   sport: {
     label: "Sport", icon: "⚽",
     questions: [
-      { q:"Wie viele Spieler stehen bei Fußball pro Team gleichzeitig auf dem Feld?", o:["9","10","11","12"], a:2 },
-      { q:"Welches Land hat die meisten Fußball-Weltmeistertitel?", o:["Deutschland","Italien","Argentinien","Brasilien"], a:3 },
-      { q:"In welcher Stadt fanden 1972 die Olympischen Sommerspiele statt?", o:["Berlin","München","Hamburg","Köln"], a:1 },
-      { q:"Wie lang ist ein Marathonlauf?", o:["ca. 32 km","ca. 38 km","ca. 42 km","ca. 46 km"], a:2 },
-      { q:"Welcher Sport wird auf einem 'Court' mit Netz und Schläger gespielt und ist nicht Tennis?", o:["Badminton","Golf","Bowling","Rudern"], a:0 },
-      { q:"Wie oft finden die Olympischen Sommerspiele statt?", o:["Alle 2 Jahre","Alle 3 Jahre","Alle 4 Jahre","Alle 5 Jahre"], a:2 },
-      { q:"Welcher deutsche Boxer wurde mehrfacher Schwergewichts-Weltmeister?", o:["Max Schmeling","Wladimir Klitschko","Henry Maske","Axel Schulz"], a:0 },
-      { q:"Wie viele Ringe hat das olympische Symbol?", o:["Vier","Fünf","Sechs","Sieben"], a:1 },
-      { q:"In welcher Sportart ist ein 'Ass' ein direkt gewonnener Aufschlagpunkt?", o:["Volleyball","Tennis","Tischtennis","Badminton"], a:1 },
-      { q:"Welches Land richtete die Fußball-Weltmeisterschaft 2006 aus?", o:["Frankreich","Südafrika","Deutschland","Brasilien"], a:2 }
+      { type:"mc", q:"Wie viele Spieler stehen bei Fußball pro Team gleichzeitig auf dem Feld?", o:["9","10","11","12"], a:2, exp:"Jedes Team stellt elf Spieler, davon einer als Torwart." },
+      { type:"mc", q:"Welches Land hat die meisten Fußball-Weltmeistertitel?", o:["Deutschland","Italien","Argentinien","Brasilien"], a:3, exp:"Brasilien gewann die WM bisher fünfmal, zuletzt 2002." },
+      { type:"mc", q:"In welcher Stadt fanden 1972 die Olympischen Sommerspiele statt?", o:["Berlin","München","Hamburg","Köln"], a:1, exp:"Die Spiele 1972 in München wurden durch das Attentat auf die israelische Mannschaft überschattet." },
+      { type:"mc", q:"Wie lang ist ein Marathonlauf?", o:["ca. 32 km","ca. 38 km","ca. 42 km","ca. 46 km"], a:2, exp:"Ein Marathon ist exakt 42,195 km lang, benannt nach dem Lauf des Boten von Marathon nach Athen." },
+      { type:"mc", q:"Welcher Sport wird auf einem Feld mit Netz und Schläger gespielt und ist nicht Tennis?", o:["Badminton","Golf","Bowling","Rudern"], a:0, exp:"Badminton wird ähnlich wie Tennis über ein Netz gespielt, allerdings mit einem Federball." },
+      { type:"mc", q:"Wie oft finden die Olympischen Sommerspiele statt?", o:["Alle 2 Jahre","Alle 3 Jahre","Alle 4 Jahre","Alle 5 Jahre"], a:2, exp:"Der olympische Vierjahresrhythmus wird nur in Ausnahmefällen wie 2020/2021 durchbrochen." },
+      { type:"mc", q:"Welcher deutsche Boxer wurde mehrfacher Schwergewichts-Weltmeister?", o:["Max Schmeling","Wladimir Klitschko","Henry Maske","Axel Schulz"], a:0, exp:"Max Schmeling war in den 1930er-Jahren Weltmeister im Schwergewicht und international bekannt." },
+      { type:"mc", q:"Wie viele Ringe hat das olympische Symbol?", o:["Vier","Fünf","Sechs","Sieben"], a:1, exp:"Die fünf Ringe stehen für die fünf bewohnten Kontinente, die im Olympismus vereint werden." },
+      { type:"mc", q:"In welcher Sportart ist ein 'Ass' ein direkt gewonnener Aufschlagpunkt?", o:["Volleyball","Tennis","Tischtennis","Badminton"], a:1, exp:"Ein Ass im Tennis ist ein Aufschlag, den der Gegner gar nicht berühren kann." },
+      { type:"mc", q:"Welches Land richtete die Fußball-Weltmeisterschaft 2006 aus?", o:["Frankreich","Südafrika","Deutschland","Brasilien"], a:2, exp:"Die WM 2006 in Deutschland ging als 'Sommermärchen' in die Erinnerung ein." },
+      { type:"mc", q:"Wie viele Spieler stehen bei Basketball pro Team gleichzeitig auf dem Feld?", o:["4","5","6","7"], a:1, exp:"Jedes Basketballteam hat fünf Spieler gleichzeitig auf dem Feld." },
+      { type:"mc", q:"Welches Land gewann die Fußball-Europameisterschaft 2024?", o:["England","Deutschland","Frankreich","Spanien"], a:3, exp:"Spanien gewann das Finale in Berlin gegen England und holte den Titel zum vierten Mal." },
+      { type:"mc", q:"In welcher Stadt fanden die Olympischen Winterspiele 1936 statt?", o:["München","Garmisch-Partenkirchen","Innsbruck","St. Moritz"], a:1, exp:"Garmisch-Partenkirchen war 1936 Gastgeber der Olympischen Winterspiele, im selben Jahr wie Berlin für die Sommerspiele." },
+      { type:"mc", q:"Wie viele Gewinnsätze braucht ein Herren-Grand-Slam-Sieger maximal (Best of 5)?", o:["2","3","4","5"], a:1, exp:"Bei den großen Turnieren im Herrentennis gewinnt, wer zuerst drei Sätze für sich entscheidet." },
+      { type:"text", q:"Welcher deutsche Fußballverein hat die meisten deutschen Meistertitel?", answer:"FC Bayern München", exp:"Bayern München ist mit großem Abstand der erfolgreichste Verein der Bundesliga-Geschichte." }
     ]
   },
   kultur: {
     label: "Kultur & Kunst", icon: "🎭",
     questions: [
-      { q:"Wer malte die 'Mona Lisa'?", o:["Michelangelo","Raffael","Leonardo da Vinci","Botticelli"], a:2 },
-      { q:"Von welchem Komponisten stammt die 'Neunte Sinfonie' mit der 'Ode an die Freude'?", o:["Mozart","Beethoven","Bach","Brahms"], a:1 },
-      { q:"Welcher deutsche Dichter schrieb 'Faust'?", o:["Friedrich Schiller","Heinrich Heine","Johann Wolfgang von Goethe","Thomas Mann"], a:2 },
-      { q:"In welcher Stadt steht das berühmte Opernhaus mit der markanten Muschel-Architektur?", o:["Sydney","Wien","Mailand","Toronto"], a:0 },
-      { q:"Welches Museum in Paris beherbergt die Mona Lisa?", o:["Musée d'Orsay","Centre Pompidou","Louvre","Petit Palais"], a:2 },
-      { q:"Wer schrieb die Harry-Potter-Romanreihe?", o:["J.R.R. Tolkien","J.K. Rowling","Roald Dahl","C.S. Lewis"], a:1 },
-      { q:"Welcher Baustil ist für spitze Bögen und hohe Fenster wie beim Kölner Dom bekannt?", o:["Romanik","Gotik","Barock","Renaissance"], a:1 },
-      { q:"Wer komponierte die Oper 'Die Zauberflöte'?", o:["Richard Wagner","Wolfgang Amadeus Mozart","Johann Strauss","Giuseppe Verdi"], a:1 },
-      { q:"Welches Bauwerk in Rom war einst eine Kampfarena für Gladiatoren?", o:["Pantheon","Kolosseum","Forum Romanum","Trevi-Brunnen"], a:1 },
-      { q:"Wer gilt als Erfinder des Buchdrucks mit beweglichen Lettern?", o:["Johannes Gutenberg","Leonardo da Vinci","Martin Luther","Albrecht Dürer"], a:0 }
+      { type:"mc", q:"Wer malte die 'Mona Lisa'?", o:["Michelangelo","Raffael","Leonardo da Vinci","Botticelli"], a:2, exp:"Leonardo da Vinci malte das Porträt vermutlich zwischen 1503 und 1519." },
+      { type:"mc", q:"Von welchem Komponisten stammt die 'Neunte Sinfonie' mit der 'Ode an die Freude'?", o:["Mozart","Beethoven","Bach","Brahms"], a:1, exp:"Beethoven komponierte die Sinfonie, obwohl er zu dieser Zeit bereits fast vollständig ertaubt war." },
+      { type:"mc", q:"Welcher deutsche Dichter schrieb 'Faust'?", o:["Friedrich Schiller","Heinrich Heine","Johann Wolfgang von Goethe","Thomas Mann"], a:2, exp:"Goethe arbeitete über 50 Jahre an seinem Lebenswerk 'Faust'." },
+      { type:"mc", q:"In welcher Stadt steht das berühmte Opernhaus mit der markanten Muschel-Architektur?", o:["Sydney","Wien","Mailand","Toronto"], a:0, exp:"Das Opera House in Sydney wurde 1973 eröffnet und ist ein Wahrzeichen Australiens." },
+      { type:"mc", q:"Welches Museum in Paris beherbergt die Mona Lisa?", o:["Musée d'Orsay","Centre Pompidou","Louvre","Petit Palais"], a:2, exp:"Der Louvre ist das meistbesuchte Museum der Welt und zeigt die Mona Lisa hinter Panzerglas." },
+      { type:"mc", q:"Wer schrieb die Harry-Potter-Romanreihe?", o:["J.R.R. Tolkien","J.K. Rowling","Roald Dahl","C.S. Lewis"], a:1, exp:"J.K. Rowling veröffentlichte den ersten Band 1997 in Großbritannien." },
+      { type:"mc", q:"Welcher Baustil ist für spitze Bögen und hohe Fenster wie beim Kölner Dom bekannt?", o:["Romanik","Gotik","Barock","Renaissance"], a:1, exp:"Die Gotik entstand im 12. Jahrhundert in Frankreich und breitete sich über ganz Europa aus." },
+      { type:"mc", q:"Wer komponierte die Oper 'Die Zauberflöte'?", o:["Richard Wagner","Wolfgang Amadeus Mozart","Johann Strauss","Giuseppe Verdi"], a:1, exp:"Mozart komponierte die Oper 1791, kurz vor seinem Tod im selben Jahr." },
+      { type:"mc", q:"Welches Bauwerk in Rom war einst eine Kampfarena für Gladiatoren?", o:["Pantheon","Kolosseum","Forum Romanum","Trevi-Brunnen"], a:1, exp:"Das Kolosseum bot bis zu 50.000 Zuschauern Platz und wurde im Jahr 80 n. Chr. eröffnet." },
+      { type:"mc", q:"Wer gilt als Erfinder des Buchdrucks mit beweglichen Lettern?", o:["Johannes Gutenberg","Leonardo da Vinci","Martin Luther","Albrecht Dürer"], a:0, exp:"Gutenberg entwickelte um 1450 in Mainz den Buchdruck mit beweglichen Metalllettern." },
+      { type:"mc", q:"Wer schrieb 'Die Verwandlung'?", o:["Franz Kafka","Thomas Mann","Hermann Hesse","Bertolt Brecht"], a:0, exp:"In Kafkas Erzählung von 1915 verwandelt sich der Protagonist Gregor Samsa in ein Insekt." },
+      { type:"mc", q:"Welcher Maler schnitt sich bekanntermaßen ein Ohr(teil) ab?", o:["Pablo Picasso","Vincent van Gogh","Salvador Dalí","Claude Monet"], a:1, exp:"Van Gogh verletzte sich 1888 während einer psychischen Krise selbst am Ohr." },
+      { type:"mc", q:"Welches Instrument spielte Ludwig van Beethoven hauptsächlich?", o:["Violine","Cello","Klavier","Flöte"], a:2, exp:"Beethoven war vor allem als Pianist und Klavierkomponist bekannt." },
+      { type:"mc", q:"In welcher Stadt findet das Oktoberfest statt?", o:["Stuttgart","München","Berlin","Köln"], a:1, exp:"Das Oktoberfest in München ist das größte Volksfest der Welt und findet seit 1810 statt." },
+      { type:"mc", q:"Wer komponierte die 'Kleine Nachtmusik'?", o:["Beethoven","Haydn","Mozart","Schubert"], a:2, exp:"Mozart komponierte das Stück 1787, der volle Titel lautet 'Eine kleine Nachtmusik'." }
     ]
   },
   technik: {
     label: "Alltag & Technik", icon: "💡",
     questions: [
-      { q:"Wofür steht die Abkürzung 'WLAN'?", o:["Wireless Local Area Network","World Link Area Network","Wide Local Access Node","Wireless Line Area Net"], a:0 },
-      { q:"Wer gilt als Erfinder der Glühbirne (als Massenprodukt)?", o:["Nikola Tesla","Thomas Edison","Alexander Graham Bell","James Watt"], a:1 },
-      { q:"Welches Unternehmen entwickelte das Betriebssystem Windows?", o:["Apple","Google","Microsoft","IBM"], a:2 },
-      { q:"Wofür steht 'PDF'?", o:["Personal Data File","Portable Document Format","Print Data Format","Public Document File"], a:1 },
-      { q:"Was ist die Hauptaufgabe eines Katalysators im Auto?", o:["Kraftstoff sparen","Abgase reinigen","Motor kühlen","Reifen schonen"], a:1 },
-      { q:"Wie nennt man den Vorgang, wenn Lebensmittel durch Kälte länger haltbar gemacht werden?", o:["Pasteurisieren","Fermentieren","Kühlen bzw. Einfrieren","Räuchern"], a:2 },
-      { q:"Welches Land nutzte als erstes flächendeckend den Euro als Bargeld (2002)?", o:["Nur Deutschland","19 EU-Staaten gemeinsam","Nur Frankreich","Nur Italien"], a:1 },
-      { q:"Wofür steht die Abkürzung 'ABS' im Auto?", o:["Anti-Blockier-System","Automatik-Brems-Steuerung","Antriebs-Balance-System","Aktiv-Bremsen-Sensor"], a:0 },
-      { q:"Was bedeutet 'GPS'?", o:["Global Positioning System","General Public Service","Ground Position Signal","Global Phone Standard"], a:0 },
-      { q:"Welche Farbe entsteht beim Mischen von Blau und Gelb?", o:["Lila","Orange","Grün","Braun"], a:2 }
+      { type:"mc", q:"Wofür steht die Abkürzung 'WLAN'?", o:["Wireless Local Area Network","World Link Area Network","Wide Local Access Node","Wireless Line Area Net"], a:0, exp:"WLAN bezeichnet ein kabelloses lokales Funknetzwerk." },
+      { type:"mc", q:"Wer gilt als Erfinder der Glühbirne als Massenprodukt?", o:["Nikola Tesla","Thomas Edison","Alexander Graham Bell","James Watt"], a:1, exp:"Edison entwickelte 1879 eine langlebige und marktfähige Glühbirne." },
+      { type:"mc", q:"Welches Unternehmen entwickelte das Betriebssystem Windows?", o:["Apple","Google","Microsoft","IBM"], a:2, exp:"Microsoft veröffentlichte die erste Windows-Version 1985." },
+      { type:"mc", q:"Wofür steht 'PDF'?", o:["Personal Data File","Portable Document Format","Print Data Format","Public Document File"], a:1, exp:"PDF wurde von Adobe entwickelt, damit Dokumente auf jedem Gerät gleich aussehen." },
+      { type:"mc", q:"Was ist die Hauptaufgabe eines Katalysators im Auto?", o:["Kraftstoff sparen","Abgase reinigen","Motor kühlen","Reifen schonen"], a:1, exp:"Der Katalysator wandelt schädliche Abgase in weniger schädliche Stoffe um." },
+      { type:"mc", q:"Wie nennt man den Vorgang, wenn Lebensmittel durch Kälte länger haltbar gemacht werden?", o:["Pasteurisieren","Fermentieren","Kühlen bzw. Einfrieren","Räuchern"], a:2, exp:"Kälte verlangsamt das Wachstum von Mikroorganismen und verlängert so die Haltbarkeit." },
+      { type:"mc", q:"Wofür steht die Abkürzung 'ABS' im Auto?", o:["Anti-Blockier-System","Automatik-Brems-Steuerung","Antriebs-Balance-System","Aktiv-Bremsen-Sensor"], a:0, exp:"ABS verhindert, dass die Räder beim Bremsen blockieren, damit das Auto lenkbar bleibt." },
+      { type:"mc", q:"Was bedeutet 'GPS'?", o:["Global Positioning System","General Public Service","Ground Position Signal","Global Phone Standard"], a:0, exp:"GPS ist ein satellitengestütztes System zur weltweiten Positionsbestimmung." },
+      { type:"mc", q:"Welche Farbe entsteht beim Mischen von Blau und Gelb?", o:["Lila","Orange","Grün","Braun"], a:2, exp:"Blau und Gelb ergeben als Grundfarben gemischt die Farbe Grün." },
+      { type:"mc", q:"Welches Unternehmen entwickelte das erste iPhone?", o:["Samsung","Google","Apple","Sony"], a:2, exp:"Apple stellte das erste iPhone 2007 vor und veränderte damit den Smartphone-Markt." },
+      { type:"mc", q:"Wofür steht 'USB'?", o:["Universal Serial Bus","United System Bus","Universal System Board","Unified Serial Board"], a:0, exp:"USB ist ein weit verbreiteter Standard für den Anschluss von Geräten an Computer." },
+      { type:"mc", q:"Was ist die Hauptaufgabe eines Prozessors (CPU) im Computer?", o:["Daten dauerhaft speichern","Berechnungen ausführen","Bild anzeigen","Ton wiedergeben"], a:1, exp:"Die CPU führt die Rechen- und Steuerbefehle eines Programms aus." },
+      { type:"mc", q:"Welche Technologie ermöglicht kabelloses Bezahlen mit dem Smartphone?", o:["Bluetooth","WLAN","NFC","GPS"], a:2, exp:"NFC (Near Field Communication) überträgt Daten über sehr kurze Distanzen, ideal fürs Bezahlen." },
+      { type:"mc", q:"Wofür steht die Abkürzung 'KI' im Technikkontext?", o:["Kabellose Internetverbindung","Künstliche Intelligenz","Kombinierte Informatik","Kritische Infrastruktur"], a:1, exp:"KI bezeichnet Systeme, die Aufgaben lösen, für die sonst menschliche Intelligenz nötig wäre." },
+      { type:"text", q:"Wie nennt man ein Programm, das gezielt Sicherheitslücken ausnutzt oder Geräte schädigt?", answer:"Schadsoftware / Malware", exp:"Malware ist der Oberbegriff für Viren, Trojaner, Ransomware und ähnliche schädliche Programme." }
+    ]
+  },
+  deutschland: {
+    label: "Deutschland", icon: "🇩🇪",
+    questions: [
+      { type:"text", q:"Nenne so viele der 16 deutschen Bundesländer wie du kannst.", answer:"Baden-Württemberg, Bayern, Berlin, Brandenburg, Bremen, Hamburg, Hessen, Mecklenburg-Vorpommern, Niedersachsen, Nordrhein-Westfalen, Rheinland-Pfalz, Saarland, Sachsen, Sachsen-Anhalt, Schleswig-Holstein, Thüringen", exp:"Deutschland hat 16 Bundesländer, drei davon (Berlin, Hamburg, Bremen) sind gleichzeitig Stadtstaaten." },
+      { type:"mc", q:"Wie heißt die Hauptstadt von Bayern?", o:["München","Nürnberg","Augsburg","Regensburg"], a:0, exp:"München ist mit rund 1,5 Millionen Einwohnern die Landeshauptstadt Bayerns." },
+      { type:"mc", q:"Welches Bundesland ist flächenmäßig das größte?", o:["Nordrhein-Westfalen","Bayern","Niedersachsen","Baden-Württemberg"], a:1, exp:"Bayern ist mit rund 70.500 km² das flächenmäßig größte deutsche Bundesland." },
+      { type:"mc", q:"Welches Bundesland ist flächenmäßig das kleinste?", o:["Saarland","Hamburg","Bremen","Berlin"], a:2, exp:"Bremen ist mit rund 420 km² das kleinste Bundesland, noch vor Berlin und Hamburg." },
+      { type:"text", q:"Wie heißt der aktuelle Bundeskanzler? (Stand September 2026)", answer:"Friedrich Merz (CDU)", exp:"Friedrich Merz ist seit Mai 2025 Bundeskanzler, an der Spitze einer Koalition aus CDU/CSU und SPD." },
+      { type:"text", q:"Wer ist aktuell Vizekanzler und Bundesfinanzminister? (Stand September 2026)", answer:"Lars Klingbeil (SPD)", exp:"Lars Klingbeil ist SPD-Vorsitzender und bekleidet seit Mai 2025 beide Ämter gleichzeitig." },
+      { type:"text", q:"Wer ist aktuell Bundesaußenminister? (Stand September 2026)", answer:"Johann Wadephul (CDU)", exp:"Johann Wadephul übernahm das Auswärtige Amt im Mai 2025 im Kabinett Merz." },
+      { type:"text", q:"Wer ist aktuell Bundesinnenminister? (Stand September 2026)", answer:"Alexander Dobrindt (CSU)", exp:"Alexander Dobrindt ist seit Mai 2025 Bundesminister des Innern." },
+      { type:"mc", q:"Welche Farben hat die deutsche Flagge von oben nach unten?", o:["Rot-Gold-Schwarz","Schwarz-Rot-Gold","Gold-Schwarz-Rot","Schwarz-Gold-Rot"], a:1, exp:"Die Farben Schwarz-Rot-Gold gehen auf die Uniformen der Befreiungskriege gegen Napoleon zurück." },
+      { type:"mc", q:"In welcher Stadt tagt der Deutsche Bundestag?", o:["Bonn","Berlin","Frankfurt","München"], a:1, exp:"Der Bundestag tagt im Reichstagsgebäude in Berlin, seit dem Umzug von Bonn 1999." },
+      { type:"mc", q:"In welchem Jahr trat das deutsche Grundgesetz in Kraft?", o:["1945","1949","1955","1961"], a:1, exp:"Das Grundgesetz wurde am 23. Mai 1949 verkündet und bildet die Verfassung Deutschlands." },
+      { type:"text", q:"Wie heißt der aktuelle Bundespräsident? (Stand September 2026)", answer:"Frank-Walter Steinmeier", exp:"Steinmeier ist seit 2017 Bundespräsident und damit deutsches Staatsoberhaupt." },
+      { type:"mc", q:"Welcher Fluss fließt durch Berlin?", o:["Elbe","Rhein","Spree","Oder"], a:2, exp:"Die Spree durchquert die Hauptstadt und mündet später in die Havel." },
+      { type:"text", q:"Welche drei deutschen Städte sind gleichzeitig eigene Bundesländer (Stadtstaaten)?", answer:"Berlin, Hamburg und Bremen", exp:"Diese drei Stadtstaaten haben Sonderstatus: Stadt und Bundesland sind identisch." },
+      { type:"mc", q:"Seit welchem Jahr ist der 3. Oktober der 'Tag der Deutschen Einheit'?", o:["1989","1990","1991","1994"], a:1, exp:"Seit dem Beitritt der DDR zur Bundesrepublik am 3. Oktober 1990 ist dieser Tag der Nationalfeiertag." },
+      { type:"mc", q:"Welches Amt ist laut Grundgesetz vor allem repräsentatives Staatsoberhaupt ohne eigene Regierungsmacht?", o:["Bundeskanzler","Bundespräsident","Bundestagspräsident","Ministerpräsident"], a:1, exp:"Der Bundespräsident vertritt Deutschland nach außen, die Regierungsgeschäfte führt der Bundeskanzler." }
     ]
   }
 };
 
-const CATEGORY_ORDER = ["geografie","geschichte","wissenschaft","sport","kultur","technik"];
+const CATEGORY_ORDER = ["geografie","geschichte","wissenschaft","sport","kultur","technik","deutschland"];
 const ROUND_LENGTH = 10;
+const TOTAL_QUESTIONS = CATEGORY_ORDER.reduce((sum,k) => sum + QUESTION_BANK[k].questions.length, 0);
+document.getElementById("questionCountLabel").textContent = `${TOTAL_QUESTIONS} Fragen · ${CATEGORY_ORDER.length} Kategorien`;
 
 /* ---------------------------------------------------------
    State & helpers
 --------------------------------------------------------- */
-let state = { catKey:null, catLabel:"", questions:[], idx:0, score:0, answered:false, review:[] };
+let state = { catKey:null, catLabel:"", questions:[], idx:0, score:0, answered:false, review:[], pendingGrade:false };
 
 function shuffle(arr){
   const a = arr.slice();
@@ -391,12 +505,10 @@ function renderStart(){
   mixedTile.addEventListener("click", () => startRound("mixed"));
   grid.appendChild(mixedTile);
 
-  const best = CATEGORY_ORDER.reduce((sum,k) => sum + getHighscore(k), 0) + getHighscore("mixed");
   const anyPlayed = CATEGORY_ORDER.some(k => localStorage.getItem(highscoreKey(k)) !== null) || localStorage.getItem(highscoreKey("mixed")) !== null;
   document.getElementById("highscoreLine").innerHTML = anyPlayed
     ? `Bisher beste Einzelrunde: <strong>${Math.max(...CATEGORY_ORDER.map(getHighscore), getHighscore("mixed"))}/10</strong>`
     : "Noch keine Runde gespielt.";
-  document.getElementById("scoreChip").style.display = "none";
 }
 
 function startRound(catKey){
@@ -406,32 +518,63 @@ function startRound(catKey){
   state.idx = 0;
   state.score = 0;
   state.review = [];
-  document.getElementById("scoreChip").style.display = "block";
   showScreen("screen-quiz");
   renderQuestion();
 }
 
 function renderQuestion(){
   state.answered = false;
+  state.pendingGrade = false;
   const total = state.questions.length;
   const q = state.questions[state.idx];
   document.getElementById("quizCat").textContent = state.catKey === "mixed" ? q.cat : state.catLabel;
   document.getElementById("quizProgressText").textContent = `Frage ${state.idx+1}/${total}`;
   document.getElementById("progressFill").style.width = `${(state.idx/total)*100}%`;
   document.getElementById("questionText").textContent = q.q;
-  document.getElementById("scoreChipVal").textContent = state.score;
+  document.getElementById("scoreVal").textContent = state.score;
 
   const wrap = document.getElementById("answersWrap");
   wrap.innerHTML = "";
-  const letters = ["A","B","C","D"];
-  q.o.forEach((opt, i) => {
-    const btn = document.createElement("button");
-    btn.className = "answer-btn";
-    btn.innerHTML = `<span class="answer-letter">${letters[i]}</span><span>${opt}</span>`;
-    btn.addEventListener("click", () => selectAnswer(i));
-    wrap.appendChild(btn);
-  });
+
+  if(q.type === "text"){
+    const box = document.createElement("div");
+    box.className = "text-answer-wrap";
+    box.innerHTML = `
+      <input type="text" class="text-input" id="textAnswerInput" placeholder="Deine Antwort…" autocomplete="off" autocapitalize="sentences">
+      <button class="check-btn" id="checkTextBtn">Antwort prüfen</button>
+    `;
+    wrap.appendChild(box);
+    const input = document.getElementById("textAnswerInput");
+    const checkBtn = document.getElementById("checkTextBtn");
+    checkBtn.addEventListener("click", () => revealTextAnswer());
+    input.addEventListener("keydown", (e) => { if(e.key === "Enter") revealTextAnswer(); });
+  } else {
+    const letters = ["A","B","C","D"];
+    q.o.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.className = "answer-btn";
+      btn.innerHTML = `<span class="answer-letter">${letters[i]}</span><span>${opt}</span>`;
+      btn.addEventListener("click", () => selectAnswer(i));
+      wrap.appendChild(btn);
+    });
+  }
+
+  document.getElementById("explainPanel").classList.remove("show");
   document.getElementById("nextBtn").classList.remove("show");
+}
+
+function showExplanation(q){
+  document.getElementById("explainText").textContent = q.exp || "";
+  document.getElementById("explainPanel").classList.add("show");
+}
+
+function finishReveal(q, correct, revealedAnswerText){
+  state.review.push({ q:q.q, correct, correctText: revealedAnswerText });
+  document.getElementById("scoreVal").textContent = state.score;
+  document.getElementById("progressFill").style.width = `${((state.idx+1)/state.questions.length)*100}%`;
+  showExplanation(q);
+  document.getElementById("nextBtn").classList.add("show");
+  document.getElementById("nextBtn").textContent = (state.idx+1 < state.questions.length) ? "Weiter" : "Ergebnis ansehen";
 }
 
 function selectAnswer(i){
@@ -441,30 +584,62 @@ function selectAnswer(i){
   const buttons = document.querySelectorAll("#answersWrap .answer-btn");
   const correct = i === q.a;
   if(correct) state.score++;
-  state.review.push({ q:q.q, correct, correctText:q.o[q.a] });
 
   buttons.forEach((b, idx) => {
     b.classList.add("disabled");
     if(idx === q.a) b.classList.add("correct");
     else if(idx === i) b.classList.add("wrong");
   });
-  document.getElementById("scoreChipVal").textContent = state.score;
-  document.getElementById("progressFill").style.width = `${((state.idx+1)/state.questions.length)*100}%`;
-  document.getElementById("nextBtn").classList.add("show");
-  document.getElementById("nextBtn").textContent = (state.idx+1 < state.questions.length) ? "Weiter" : "Ergebnis ansehen";
+
+  finishReveal(q, correct, q.o[q.a]);
 }
 
-document.getElementById("nextBtn").addEventListener("click", () => {
+function revealTextAnswer(){
+  if(state.answered) return;
+  state.answered = true;
+  const q = state.questions[state.idx];
+  const wrap = document.getElementById("answersWrap");
+  wrap.innerHTML = `
+    <div class="reveal-box">
+      <strong>Richtige Antwort</strong>
+      ${q.answer}
+    </div>
+    <div class="self-grade-row">
+      <button class="self-grade-btn right" id="gradeRightBtn">✓ Ich hatte recht</button>
+      <button class="self-grade-btn wrong" id="gradeWrongBtn">✗ Ich lag falsch</button>
+    </div>
+  `;
+  showExplanation(q);
+  state.pendingGrade = true;
+  document.getElementById("gradeRightBtn").addEventListener("click", () => selfGrade(true, q));
+  document.getElementById("gradeWrongBtn").addEventListener("click", () => selfGrade(false, q));
+}
+
+function selfGrade(wasRight, q){
+  if(!state.pendingGrade) return;
+  state.pendingGrade = false;
+  if(wasRight) state.score++;
+  document.getElementById("gradeRightBtn").disabled = true;
+  document.getElementById("gradeWrongBtn").disabled = true;
+  document.getElementById(wasRight ? "gradeRightBtn" : "gradeWrongBtn").style.opacity = "1";
+  finishReveal(q, wasRight, q.answer);
+}
+
+function goNext(){
   state.idx++;
   if(state.idx < state.questions.length){
     renderQuestion();
   } else {
     renderResult();
   }
+}
+
+document.getElementById("nextBtn").addEventListener("click", goNext);
+document.getElementById("skipExplainBtn").addEventListener("click", () => {
+  if(document.getElementById("nextBtn").classList.contains("show")) goNext();
 });
 
 function renderResult(){
-  document.getElementById("scoreChip").style.display = "none";
   const total = state.questions.length;
   document.getElementById("resultCatLabel").textContent = `Ergebnis · ${state.catLabel}`;
   document.getElementById("resultScore").textContent = state.score;
