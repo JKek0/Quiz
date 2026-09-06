@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Allgemeinwissen-Quiz</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F1B3C">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1B3C;
+    --panel:#16234F;
+    --panel-2:#1C2C5C;
+    --line:#31437F;
+    --gold:#E8B44C;
+    --gold-dim:#B98F3A;
+    --text:#F2EFE6;
+    --text-dim:#9FB0D9;
+    --green:#4CAF6D;
+    --red:#E2555B;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg); color:var(--text);
+    font-family:'Work Sans', sans-serif;
+    -webkit-tap-highlight-color:transparent;
+    overscroll-behavior:none;
+  }
+  .display{font-family:'Anton', sans-serif; letter-spacing:0.02em;}
+  #app{
+    max-width:480px; margin:0 auto; min-height:100vh;
+    display:flex; flex-direction:column;
+    padding:env(safe-area-inset-top,0) 18px env(safe-area-inset-bottom,0);
+    position:relative;
+  }
+  .screen{display:none; flex:1; flex-direction:column; padding-top:28px; padding-bottom:24px;}
+  .screen.active{display:flex;}
+
+  /* ---------- Start screen ---------- */
+  .eyebrow{color:var(--gold); font-size:14px; font-weight:600; margin:0 0 4px;}
+  h1.title{
+    font-size:clamp(34px, 9vw, 46px);
+    text-transform:uppercase;
+    line-height:0.98; margin:0 0 6px; color:var(--text);
+  }
+  .title .accent{color:var(--gold);}
+  .subtitle{color:var(--text-dim); font-size:15px; line-height:1.5; margin:0 0 28px; max-width:34ch;}
+
+  .cat-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    margin-bottom:18px;
+  }
+  .cat-tile{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-top:3px solid var(--gold-dim);
+    padding:16px 12px;
+    text-align:left;
+    color:var(--text);
+    font-family:'Work Sans', sans-serif;
+    cursor:pointer;
+    transition:border-top-color .15s ease, background .15s ease;
+  }
+  .cat-tile:active{background:var(--panel-2); border-top-color:var(--gold);}
+  .cat-icon{font-size:26px; display:block; margin-bottom:8px;}
+  .cat-name{font-weight:700; font-size:15px; display:block;}
+  .cat-count{color:var(--text-dim); font-size:12px; display:block; margin-top:2px;}
+
+  .cat-tile.mixed{
+    grid-column:1 / -1;
+    background:var(--gold);
+    color:var(--bg);
+    border-top-color:var(--gold);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .cat-tile.mixed .cat-name{font-size:16px;}
+  .cat-tile.mixed .cat-count{color:#5A4110;}
+
+  .highscore-line{
+    margin-top:auto; padding-top:20px;
+    color:var(--text-dim); font-size:13px;
+    border-top:1px solid var(--line);
+  }
+  .highscore-line strong{color:var(--gold);}
+
+  /* ---------- Quiz screen ---------- */
+  .quiz-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .quiz-cat{color:var(--gold); font-size:13px; font-weight:600;}
+  .quiz-progress-text{color:var(--text-dim); font-size:13px;}
+  .progress-track{height:4px; background:var(--panel); margin-bottom:26px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--gold); width:0%; transition:width .35s ease;}
+
+  .score-chip{
+    position:absolute; top:calc(env(safe-area-inset-top,0) + 8px); right:18px;
+    background:var(--panel); border:1px solid var(--line);
+    padding:5px 10px; font-size:12px; color:var(--text-dim);
+  }
+  .score-chip strong{color:var(--gold); font-family:'Anton'; font-size:14px; margin-left:4px;}
+
+  .question-panel{
+    background:var(--panel);
+    border-top:3px solid var(--gold);
+    padding:22px 18px;
+    margin-bottom:20px;
+    min-height:96px;
+    display:flex; align-items:center;
+  }
+  .question-text{font-size:19px; font-weight:600; line-height:1.35; margin:0;}
+
+  .answers{display:flex; flex-direction:column; gap:10px;}
+  .answer-btn{
+    display:flex; align-items:center; gap:12px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:4px solid var(--line);
+    color:var(--text);
+    font-family:'Work Sans', sans-serif;
+    font-size:15px; font-weight:500;
+    text-align:left;
+    padding:15px 14px;
+    cursor:pointer;
+    transition:border-left-color .12s ease, background .12s ease;
+  }
+  .answer-letter{
+    font-family:'Anton'; color:var(--gold-dim); font-size:16px; min-width:18px;
+  }
+  .answer-btn:active{background:var(--panel-2);}
+  .answer-btn.correct{background:rgba(76,175,109,0.15); border-left-color:var(--green);}
+  .answer-btn.correct .answer-letter{color:var(--green);}
+  .answer-btn.wrong{background:rgba(226,85,91,0.15); border-left-color:var(--red); animation:shake .28s ease;}
+  .answer-btn.wrong .answer-letter{color:var(--red);}
+  .answer-btn.disabled{pointer-events:none; opacity:0.55;}
+  .answer-btn.reveal-correct-only{opacity:1;}
+
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-4px);}
+    75%{transform:translateX(4px);}
+  }
+
+  .next-btn{
+    margin-top:16px; padding:15px; border:none;
+    background:var(--gold); color:var(--bg);
+    font-family:'Anton'; font-size:15px; letter-spacing:0.03em; text-transform:uppercase;
+    cursor:pointer; opacity:0; pointer-events:none; transition:opacity .2s ease;
+  }
+  .next-btn.show{opacity:1; pointer-events:auto;}
+
+  /* ---------- Result screen ---------- */
+  .result-label{color:var(--text-dim); font-size:14px; margin:0;}
+  .result-score{font-size:clamp(56px,20vw,80px); margin:2px 0 4px; line-height:1;}
+  .result-score .of{font-size:0.4em; color:var(--text-dim);}
+  .result-msg{color:var(--gold); font-size:15px; font-weight:600; margin:0 0 26px;}
+
+  .result-newbest{
+    display:inline-block; background:var(--gold); color:var(--bg);
+    font-size:12px; font-weight:700; padding:4px 10px; margin-bottom:20px;
+  }
+
+  .review-list{display:flex; flex-direction:column; gap:8px; margin-bottom:24px;}
+  .review-item{
+    background:var(--panel); border-left:4px solid var(--line);
+    padding:10px 12px; font-size:13px; color:var(--text-dim);
+  }
+  .review-item.ok{border-left-color:var(--green);}
+  .review-item.bad{border-left-color:var(--red);}
+  .review-item .rq{color:var(--text); display:block; margin-bottom:3px; font-weight:500;}
+
+  .result-actions{display:flex; gap:10px; margin-top:auto;}
+  .btn-secondary, .btn-primary{
+    flex:1; padding:15px; border:none; cursor:pointer;
+    font-family:'Anton'; font-size:14px; letter-spacing:0.02em; text-transform:uppercase;
+  }
+  .btn-secondary{background:var(--panel); color:var(--text); border:1px solid var(--line);}
+  .btn-primary{background:var(--gold); color:var(--bg);}
+
+  ::selection{background:var(--gold); color:var(--bg);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="score-chip" id="scoreChip" style="display:none;">Punkte<strong id="scoreChipVal">0</strong></div>
+
+  <!-- START SCREEN -->
+  <section class="screen active" id="screen-start">
+    <p class="eyebrow">60 Fragen · 6 Kategorien</p>
+    <h1 class="title">Allgemein<span class="accent">wissen</span>-Quiz</h1>
+    <p class="subtitle">Wähle eine Kategorie oder spiele alle Themen gemischt. Jede Runde hat 10 Fragen.</p>
+
+    <div class="cat-grid" id="catGrid"></div>
+
+    <div class="highscore-line" id="highscoreLine">Noch keine Runde gespielt.</div>
+  </section>
+
+  <!-- QUIZ SCREEN -->
+  <section class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <span class="quiz-cat" id="quizCat">Kategorie</span>
+      <span class="quiz-progress-text" id="quizProgressText">Frage 1/10</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="question-panel"><p class="question-text" id="questionText">Frage…</p></div>
+
+    <div class="answers" id="answersWrap"></div>
+
+    <button class="next-btn" id="nextBtn">Weiter</button>
+  </section>
+
+  <!-- RESULT SCREEN -->
+  <section class="screen" id="screen-result">
+    <p class="result-label" id="resultCatLabel">Ergebnis · Kategorie</p>
+    <h2 class="result-score display"><span id="resultScore">0</span><span class="of" id="resultOf">/10</span></h2>
+    <p class="result-msg" id="resultMsg">Nicht schlecht!</p>
+    <div class="result-newbest" id="newBestBadge" style="display:none;">Neue Bestleistung</div>
+
+    <div class="review-list" id="reviewList"></div>
+
+    <div class="result-actions">
+      <button class="btn-secondary" id="btnHome">Kategorien</button>
+      <button class="btn-primary" id="btnRetry">Nochmal</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   Fragenkatalog — 6 Kategorien à 10 Fragen (Allgemeinwissen)
+--------------------------------------------------------- */
+const QUESTION_BANK = {
+  geografie: {
+    label: "Geografie", icon: "🌍",
+    questions: [
+      { q:"Welches ist der längste Fluss Europas?", o:["Rhein","Donau","Wolga","Elbe"], a:2 },
+      { q:"Wie heißt die Hauptstadt von Australien?", o:["Sydney","Melbourne","Canberra","Perth"], a:2 },
+      { q:"Welches Land hat die meisten Einwohner der Welt?", o:["China","USA","Indien","Indonesien"], a:2 },
+      { q:"An welchem Gebirge liegt der höchste Berg Europas, der Mont Blanc?", o:["Pyrenäen","Alpen","Karpaten","Apennin"], a:1 },
+      { q:"Welche Meerenge trennt Europa und Afrika?", o:["Bosporus","Straße von Gibraltar","Ärmelkanal","Kattegat"], a:1 },
+      { q:"Wie viele Bundesländer hat Deutschland?", o:["14","15","16","17"], a:2 },
+      { q:"Welche Wüste ist die größte Sandwüste der Welt?", o:["Sahara","Gobi","Kalahari","Rub al-Chali"], a:0 },
+      { q:"In welchem Land liegt der Machu Picchu?", o:["Chile","Bolivien","Peru","Ecuador"], a:2 },
+      { q:"Welcher Ozean ist der größte der Erde?", o:["Atlantik","Indischer Ozean","Pazifik","Arktischer Ozean"], a:2 },
+      { q:"Welche Stadt liegt auf zwei Kontinenten?", o:["Moskau","Istanbul","Kairo","Athen"], a:1 }
+    ]
+  },
+  geschichte: {
+    label: "Geschichte", icon: "📜",
+    questions: [
+      { q:"In welchem Jahr fiel die Berliner Mauer?", o:["1987","1989","1991","1993"], a:1 },
+      { q:"Wer war der erste Bundeskanzler der Bundesrepublik Deutschland?", o:["Willy Brandt","Konrad Adenauer","Ludwig Erhard","Kurt Schumacher"], a:1 },
+      { q:"Wann endete der Zweite Weltkrieg in Europa?", o:["1943","1944","1945","1946"], a:2 },
+      { q:"Welches Ereignis löste 1914 den Ersten Weltkrieg aus?", o:["Attentat von Sarajevo","Reichstagsbrand","Sturm auf die Bastille","Krönung Wilhelms II."], a:0 },
+      { q:"Wer war die erste Bundeskanzlerin Deutschlands?", o:["Ursula von der Leyen","Angela Merkel","Christine Lambrecht","Annalena Baerbock"], a:1 },
+      { q:"In welchem Jahrhundert lebte Karl der Große?", o:["6. Jahrhundert","8./9. Jahrhundert","11. Jahrhundert","13. Jahrhundert"], a:1 },
+      { q:"Welches Land führte als erstes Land eine Frau ins Amt der Regierungschefin?", o:["Großbritannien","Sri Lanka","Indien","Israel"], a:1 },
+      { q:"Wann wurde die Europäische Union (als EU) gegründet?", o:["1957","1975","1993","2002"], a:2 },
+      { q:"Wer entdeckte 1492 den Seeweg nach Amerika?", o:["Vasco da Gama","Christoph Kolumbus","Ferdinand Magellan","Amerigo Vespucci"], a:1 },
+      { q:"Welche deutsche Stadt war während der Teilung eine geteilte Insel im Osten?", o:["Leipzig","West-Berlin","Dresden","Bonn"], a:1 }
+    ]
+  },
+  wissenschaft: {
+    label: "Naturwissenschaft", icon: "🔬",
+    questions: [
+      { q:"Welches chemische Element hat das Symbol 'Fe'?", o:["Fluor","Eisen","Zinn","Phosphor"], a:1 },
+      { q:"Wie viele Knochen hat ein erwachsener Mensch etwa?", o:["156","206","256","306"], a:1 },
+      { q:"Was misst man in Hertz?", o:["Spannung","Frequenz","Kraft","Temperatur"], a:1 },
+      { q:"Welcher Planet ist der Sonne am nächsten?", o:["Venus","Erde","Merkur","Mars"], a:2 },
+      { q:"Wie nennt man den Prozess, bei dem Pflanzen Licht in Energie umwandeln?", o:["Photosynthese","Osmose","Fermentation","Transpiration"], a:0 },
+      { q:"Welches Gas machen Pflanzen bei der Photosynthese hauptsächlich frei?", o:["Kohlendioxid","Stickstoff","Sauerstoff","Wasserstoff"], a:2 },
+      { q:"Wer entwickelte die allgemeine Relativitätstheorie?", o:["Isaac Newton","Albert Einstein","Niels Bohr","Max Planck"], a:1 },
+      { q:"Wie viele Herzkammern hat ein Mensch?", o:["Zwei","Drei","Vier","Fünf"], a:2 },
+      { q:"Was ist die Grundeinheit der elektrischen Stromstärke?", o:["Volt","Watt","Ohm","Ampere"], a:3 },
+      { q:"Welches ist das häufigste Gas in der Erdatmosphäre?", o:["Sauerstoff","Stickstoff","Kohlendioxid","Argon"], a:1 }
+    ]
+  },
+  sport: {
+    label: "Sport", icon: "⚽",
+    questions: [
+      { q:"Wie viele Spieler stehen bei Fußball pro Team gleichzeitig auf dem Feld?", o:["9","10","11","12"], a:2 },
+      { q:"Welches Land hat die meisten Fußball-Weltmeistertitel?", o:["Deutschland","Italien","Argentinien","Brasilien"], a:3 },
+      { q:"In welcher Stadt fanden 1972 die Olympischen Sommerspiele statt?", o:["Berlin","München","Hamburg","Köln"], a:1 },
+      { q:"Wie lang ist ein Marathonlauf?", o:["ca. 32 km","ca. 38 km","ca. 42 km","ca. 46 km"], a:2 },
+      { q:"Welcher Sport wird auf einem 'Court' mit Netz und Schläger gespielt und ist nicht Tennis?", o:["Badminton","Golf","Bowling","Rudern"], a:0 },
+      { q:"Wie oft finden die Olympischen Sommerspiele statt?", o:["Alle 2 Jahre","Alle 3 Jahre","Alle 4 Jahre","Alle 5 Jahre"], a:2 },
+      { q:"Welcher deutsche Boxer wurde mehrfacher Schwergewichts-Weltmeister?", o:["Max Schmeling","Wladimir Klitschko","Henry Maske","Axel Schulz"], a:0 },
+      { q:"Wie viele Ringe hat das olympische Symbol?", o:["Vier","Fünf","Sechs","Sieben"], a:1 },
+      { q:"In welcher Sportart ist ein 'Ass' ein direkt gewonnener Aufschlagpunkt?", o:["Volleyball","Tennis","Tischtennis","Badminton"], a:1 },
+      { q:"Welches Land richtete die Fußball-Weltmeisterschaft 2006 aus?", o:["Frankreich","Südafrika","Deutschland","Brasilien"], a:2 }
+    ]
+  },
+  kultur: {
+    label: "Kultur & Kunst", icon: "🎭",
+    questions: [
+      { q:"Wer malte die 'Mona Lisa'?", o:["Michelangelo","Raffael","Leonardo da Vinci","Botticelli"], a:2 },
+      { q:"Von welchem Komponisten stammt die 'Neunte Sinfonie' mit der 'Ode an die Freude'?", o:["Mozart","Beethoven","Bach","Brahms"], a:1 },
+      { q:"Welcher deutsche Dichter schrieb 'Faust'?", o:["Friedrich Schiller","Heinrich Heine","Johann Wolfgang von Goethe","Thomas Mann"], a:2 },
+      { q:"In welcher Stadt steht das berühmte Opernhaus mit der markanten Muschel-Architektur?", o:["Sydney","Wien","Mailand","Toronto"], a:0 },
+      { q:"Welches Museum in Paris beherbergt die Mona Lisa?", o:["Musée d'Orsay","Centre Pompidou","Louvre","Petit Palais"], a:2 },
+      { q:"Wer schrieb die Harry-Potter-Romanreihe?", o:["J.R.R. Tolkien","J.K. Rowling","Roald Dahl","C.S. Lewis"], a:1 },
+      { q:"Welcher Baustil ist für spitze Bögen und hohe Fenster wie beim Kölner Dom bekannt?", o:["Romanik","Gotik","Barock","Renaissance"], a:1 },
+      { q:"Wer komponierte die Oper 'Die Zauberflöte'?", o:["Richard Wagner","Wolfgang Amadeus Mozart","Johann Strauss","Giuseppe Verdi"], a:1 },
+      { q:"Welches Bauwerk in Rom war einst eine Kampfarena für Gladiatoren?", o:["Pantheon","Kolosseum","Forum Romanum","Trevi-Brunnen"], a:1 },
+      { q:"Wer gilt als Erfinder des Buchdrucks mit beweglichen Lettern?", o:["Johannes Gutenberg","Leonardo da Vinci","Martin Luther","Albrecht Dürer"], a:0 }
+    ]
+  },
+  technik: {
+    label: "Alltag & Technik", icon: "💡",
+    questions: [
+      { q:"Wofür steht die Abkürzung 'WLAN'?", o:["Wireless Local Area Network","World Link Area Network","Wide Local Access Node","Wireless Line Area Net"], a:0 },
+      { q:"Wer gilt als Erfinder der Glühbirne (als Massenprodukt)?", o:["Nikola Tesla","Thomas Edison","Alexander Graham Bell","James Watt"], a:1 },
+      { q:"Welches Unternehmen entwickelte das Betriebssystem Windows?", o:["Apple","Google","Microsoft","IBM"], a:2 },
+      { q:"Wofür steht 'PDF'?", o:["Personal Data File","Portable Document Format","Print Data Format","Public Document File"], a:1 },
+      { q:"Was ist die Hauptaufgabe eines Katalysators im Auto?", o:["Kraftstoff sparen","Abgase reinigen","Motor kühlen","Reifen schonen"], a:1 },
+      { q:"Wie nennt man den Vorgang, wenn Lebensmittel durch Kälte länger haltbar gemacht werden?", o:["Pasteurisieren","Fermentieren","Kühlen bzw. Einfrieren","Räuchern"], a:2 },
+      { q:"Welches Land nutzte als erstes flächendeckend den Euro als Bargeld (2002)?", o:["Nur Deutschland","19 EU-Staaten gemeinsam","Nur Frankreich","Nur Italien"], a:1 },
+      { q:"Wofür steht die Abkürzung 'ABS' im Auto?", o:["Anti-Blockier-System","Automatik-Brems-Steuerung","Antriebs-Balance-System","Aktiv-Bremsen-Sensor"], a:0 },
+      { q:"Was bedeutet 'GPS'?", o:["Global Positioning System","General Public Service","Ground Position Signal","Global Phone Standard"], a:0 },
+      { q:"Welche Farbe entsteht beim Mischen von Blau und Gelb?", o:["Lila","Orange","Grün","Braun"], a:2 }
+    ]
+  }
+};
+
+const CATEGORY_ORDER = ["geografie","geschichte","wissenschaft","sport","kultur","technik"];
+const ROUND_LENGTH = 10;
+
+/* ---------------------------------------------------------
+   State & helpers
+--------------------------------------------------------- */
+let state = { catKey:null, catLabel:"", questions:[], idx:0, score:0, answered:false, review:[] };
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function buildRoundQuestions(catKey){
+  if(catKey === "mixed"){
+    let all = [];
+    CATEGORY_ORDER.forEach(k => {
+      QUESTION_BANK[k].questions.forEach(q => all.push({...q, cat:QUESTION_BANK[k].label}));
+    });
+    return shuffle(all).slice(0, ROUND_LENGTH);
+  }
+  const bank = QUESTION_BANK[catKey].questions.map(q => ({...q, cat:QUESTION_BANK[catKey].label}));
+  return shuffle(bank).slice(0, Math.min(ROUND_LENGTH, bank.length));
+}
+
+function highscoreKey(catKey){ return "quiz_highscore_" + catKey; }
+function getHighscore(catKey){ return parseInt(localStorage.getItem(highscoreKey(catKey)) || "0", 10); }
+function setHighscoreIfBetter(catKey, score){
+  const cur = getHighscore(catKey);
+  if(score > cur){ localStorage.setItem(highscoreKey(catKey), String(score)); return true; }
+  return false;
+}
+
+/* ---------------------------------------------------------
+   Screens
+--------------------------------------------------------- */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function renderStart(){
+  const grid = document.getElementById("catGrid");
+  grid.innerHTML = "";
+  CATEGORY_ORDER.forEach(key => {
+    const cat = QUESTION_BANK[key];
+    const tile = document.createElement("button");
+    tile.className = "cat-tile";
+    tile.innerHTML = `<span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.label}</span><span class="cat-count">${cat.questions.length} Fragen</span>`;
+    tile.addEventListener("click", () => startRound(key));
+    grid.appendChild(tile);
+  });
+  const mixedTile = document.createElement("button");
+  mixedTile.className = "cat-tile mixed";
+  mixedTile.innerHTML = `<span><span class="cat-name">Gemischt spielen</span><span class="cat-count">Alle Kategorien</span></span><span class="cat-icon">🎲</span>`;
+  mixedTile.addEventListener("click", () => startRound("mixed"));
+  grid.appendChild(mixedTile);
+
+  const best = CATEGORY_ORDER.reduce((sum,k) => sum + getHighscore(k), 0) + getHighscore("mixed");
+  const anyPlayed = CATEGORY_ORDER.some(k => localStorage.getItem(highscoreKey(k)) !== null) || localStorage.getItem(highscoreKey("mixed")) !== null;
+  document.getElementById("highscoreLine").innerHTML = anyPlayed
+    ? `Bisher beste Einzelrunde: <strong>${Math.max(...CATEGORY_ORDER.map(getHighscore), getHighscore("mixed"))}/10</strong>`
+    : "Noch keine Runde gespielt.";
+  document.getElementById("scoreChip").style.display = "none";
+}
+
+function startRound(catKey){
+  state.catKey = catKey;
+  state.catLabel = catKey === "mixed" ? "Gemischt" : QUESTION_BANK[catKey].label;
+  state.questions = buildRoundQuestions(catKey);
+  state.idx = 0;
+  state.score = 0;
+  state.review = [];
+  document.getElementById("scoreChip").style.display = "block";
+  showScreen("screen-quiz");
+  renderQuestion();
+}
+
+function renderQuestion(){
+  state.answered = false;
+  const total = state.questions.length;
+  const q = state.questions[state.idx];
+  document.getElementById("quizCat").textContent = state.catKey === "mixed" ? q.cat : state.catLabel;
+  document.getElementById("quizProgressText").textContent = `Frage ${state.idx+1}/${total}`;
+  document.getElementById("progressFill").style.width = `${(state.idx/total)*100}%`;
+  document.getElementById("questionText").textContent = q.q;
+  document.getElementById("scoreChipVal").textContent = state.score;
+
+  const wrap = document.getElementById("answersWrap");
+  wrap.innerHTML = "";
+  const letters = ["A","B","C","D"];
+  q.o.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "answer-btn";
+    btn.innerHTML = `<span class="answer-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.addEventListener("click", () => selectAnswer(i));
+    wrap.appendChild(btn);
+  });
+  document.getElementById("nextBtn").classList.remove("show");
+}
+
+function selectAnswer(i){
+  if(state.answered) return;
+  state.answered = true;
+  const q = state.questions[state.idx];
+  const buttons = document.querySelectorAll("#answersWrap .answer-btn");
+  const correct = i === q.a;
+  if(correct) state.score++;
+  state.review.push({ q:q.q, correct, correctText:q.o[q.a] });
+
+  buttons.forEach((b, idx) => {
+    b.classList.add("disabled");
+    if(idx === q.a) b.classList.add("correct");
+    else if(idx === i) b.classList.add("wrong");
+  });
+  document.getElementById("scoreChipVal").textContent = state.score;
+  document.getElementById("progressFill").style.width = `${((state.idx+1)/state.questions.length)*100}%`;
+  document.getElementById("nextBtn").classList.add("show");
+  document.getElementById("nextBtn").textContent = (state.idx+1 < state.questions.length) ? "Weiter" : "Ergebnis ansehen";
+}
+
+document.getElementById("nextBtn").addEventListener("click", () => {
+  state.idx++;
+  if(state.idx < state.questions.length){
+    renderQuestion();
+  } else {
+    renderResult();
+  }
+});
+
+function renderResult(){
+  document.getElementById("scoreChip").style.display = "none";
+  const total = state.questions.length;
+  document.getElementById("resultCatLabel").textContent = `Ergebnis · ${state.catLabel}`;
+  document.getElementById("resultScore").textContent = state.score;
+  document.getElementById("resultOf").textContent = `/${total}`;
+
+  let msg;
+  const pct = state.score/total;
+  if(pct === 1) msg = "Perfekte Runde — alles richtig!";
+  else if(pct >= 0.8) msg = "Stark gespielt!";
+  else if(pct >= 0.5) msg = "Solide Runde.";
+  else msg = "Nächste Runde wird besser.";
+  document.getElementById("resultMsg").textContent = msg;
+
+  const isBest = setHighscoreIfBetter(state.catKey, state.score);
+  document.getElementById("newBestBadge").style.display = isBest ? "inline-block" : "none";
+
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+  state.review.forEach(r => {
+    const div = document.createElement("div");
+    div.className = "review-item " + (r.correct ? "ok" : "bad");
+    div.innerHTML = r.correct
+      ? `<span class="rq">${r.q}</span>Richtig beantwortet`
+      : `<span class="rq">${r.q}</span>Richtige Antwort: ${r.correctText}`;
+    list.appendChild(div);
+  });
+
+  showScreen("screen-result");
+}
+
+document.getElementById("btnHome").addEventListener("click", () => { renderStart(); showScreen("screen-start"); });
+document.getElementById("btnRetry").addEventListener("click", () => startRound(state.catKey));
+
+/* ---------------------------------------------------------
+   Init
+--------------------------------------------------------- */
+renderStart();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
